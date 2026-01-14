@@ -1,0 +1,934 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wake n Solve - Alarm Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        /* Setup Screen */
+        .setup-screen {
+            display: block;
+        }
+
+        .time-display {
+            text-align: center;
+            font-size: 3em;
+            color: #333;
+            margin: 30px 0;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .alarm-setup {
+            margin: 30px 0;
+        }
+
+        .alarm-setup h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .time-input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .time-input-group input {
+            width: 80px;
+            height: 60px;
+            font-size: 2em;
+            text-align: center;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .time-input-group input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .time-input-group span {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .settings-group {
+            margin: 20px 0;
+        }
+
+        .settings-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .settings-group select, .settings-group input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .settings-group select:focus {
+            border-color: #667eea;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-control input[type="range"] {
+            flex: 1;
+        }
+
+        .volume-value {
+            min-width: 45px;
+            text-align: right;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .alarm-status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .alarm-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alarm-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Challenge Screen */
+        .challenge-screen {
+            display: none;
+        }
+
+        .challenge-screen.active {
+            display: block;
+        }
+
+        .alarm-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .alarm-icon {
+            font-size: 5em;
+            margin: 20px 0;
+            animation: gentle-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        .alarm-header h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .alarm-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .challenge-content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .challenge-question {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .answer-input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+            font-size: 1.1em;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.wrong {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Success Screen */
+        .success-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .success-screen.active {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 6em;
+            margin: 20px 0;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .success-screen h2 {
+            color: #28a745;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .success-screen p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .time-display {
+                font-size: 2.5em;
+            }
+
+            .time-input-group input {
+                width: 60px;
+                height: 50px;
+                font-size: 1.5em;
+            }
+
+            .challenge-question {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <div class="logo">⏰</div>
+            <h1>Wake n Solve</h1>
+            
+            <div class="time-display" id="currentTime">00:00:00</div>
+            
+            <div class="alarm-setup">
+                <h3>Atur Alarm</h3>
+                
+                <div class="time-input-group">
+                    <input type="number" id="alarmHour" min="0" max="23" value="07" />
+                    <span>:</span>
+                    <input type="number" id="alarmMinute" min="0" max="59" value="00" />
+                </div>
+
+                <div class="settings-group">
+                    <label for="challengeType">Jenis Tantangan:</label>
+                    <select id="challengeType">
+                        <option value="mixed">Campuran (Acak)</option>
+                        <option value="math">Matematika</option>
+                        <option value="country">Tebak Negara</option>
+                        <option value="logic">Teka-teki Logika</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <label for="difficulty">Tingkat Kesulitan:</label>
+                    <select id="difficulty">
+                        <option value="easy">Mudah</option>
+                        <option value="medium" selected>Sedang</option>
+                        <option value="hard">Sulit</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <label for="volumeSlider">Volume Alarm:</label>
+                    <div class="volume-control">
+                        <input type="range" id="volumeSlider" min="0" max="100" value="70">
+                        <span class="volume-value" id="volumeValue">70%</span>
+                    </div>
+                </div>
+
+                <div class="alarm-status inactive" id="alarmStatus">
+                    Alarm Tidak Aktif
+                </div>
+
+                <button class="btn btn-primary" id="setAlarmBtn">Aktifkan Alarm</button>
+                <button class="btn btn-secondary hidden" id="cancelAlarmBtn">Batalkan Alarm</button>
+            </div>
+        </div>
+
+        <!-- Challenge Screen -->
+        <div class="challenge-screen" id="challengeScreen">
+            <div class="alarm-header">
+                <div class="alarm-icon">🔔</div>
+                <h2>Waktunya Bangun!</h2>
+                <p>Selesaikan tantangan untuk mematikan alarm</p>
+            </div>
+
+            <div class="challenge-content">
+                <div class="challenge-question" id="challengeQuestion">
+                    Memuat tantangan...
+                </div>
+
+                <input type="text" class="answer-input" id="answerInput" placeholder="Masukkan jawaban Anda..." autocomplete="off">
+                
+                <div class="feedback" id="feedback"></div>
+
+                <button class="btn btn-primary" id="submitAnswerBtn">Kirim Jawaban</button>
+            </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div class="success-screen" id="successScreen">
+            <div class="success-icon">🎉</div>
+            <h2>Selamat Pagi!</h2>
+            <p>Kamu berhasil bangun dengan menyelesaikan tantangan!</p>
+            <button class="btn btn-primary" id="backToSetupBtn">Kembali ke Pengaturan</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // VARIABEL GLOBAL
+        // ==========================================
+        let alarmTime = null;
+        let currentChallenge = null;
+        let audioContext = null;
+        let isAlarmPlaying = false;
+        let masterGainNode = null;
+
+        // ==========================================
+        // ELEMEN DOM
+        // ==========================================
+        const setupScreen = document.getElementById('setupScreen');
+        const challengeScreen = document.getElementById('challengeScreen');
+        const successScreen = document.getElementById('successScreen');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const alarmHourInput = document.getElementById('alarmHour');
+        const alarmMinuteInput = document.getElementById('alarmMinute');
+        const challengeTypeSelect = document.getElementById('challengeType');
+        const difficultySelect = document.getElementById('difficulty');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        const alarmStatus = document.getElementById('alarmStatus');
+        const setAlarmBtn = document.getElementById('setAlarmBtn');
+        const cancelAlarmBtn = document.getElementById('cancelAlarmBtn');
+        const challengeQuestion = document.getElementById('challengeQuestion');
+        const answerInput = document.getElementById('answerInput');
+        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+        const feedback = document.getElementById('feedback');
+        const backToSetupBtn = document.getElementById('backToSetupBtn');
+
+        // ==========================================
+        // WEB AUDIO API - SUARA ALARM RIANG
+        // ==========================================
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGainNode = audioContext.createGain();
+                masterGainNode.connect(audioContext.destination);
+            }
+        }
+
+        function playCheerfulAlarm() {
+            if (isAlarmPlaying) return;
+            
+            initAudioContext();
+            isAlarmPlaying = true;
+
+            // Melodi riang: C-E-G-C (Do-Mi-Sol-Do tinggi) - Interval Majors yang ceria
+            const melody = [
+                { freq: 523.25, duration: 0.3 },  // C5 (Do)
+                { freq: 659.25, duration: 0.3 },  // E5 (Mi)
+                { freq: 783.99, duration: 0.3 },  // G5 (Sol)
+                { freq: 1046.50, duration: 0.4 }, // C6 (Do tinggi)
+                { freq: 783.99, duration: 0.3 },  // G5 (Sol)
+                { freq: 659.25, duration: 0.3 }   // E5 (Mi)
+            ];
+
+            let noteIndex = 0;
+            const volume = volumeSlider.value / 100;
+
+            function playNextNote() {
+                if (!isAlarmPlaying) return;
+
+                const note = melody[noteIndex];
+                
+                // Oscillator untuk nada
+                const osc = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                osc.connect(gainNode);
+                gainNode.connect(masterGainNode);
+                
+                osc.frequency.value = note.freq;
+                osc.type = 'sine'; // Sine wave untuk suara lembut
+                
+                // Envelope ADSR untuk suara yang lebih natural
+                const now = audioContext.currentTime;
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(volume * 0.3, now + 0.05); // Attack
+                gainNode.gain.linearRampToValueAtTime(volume * 0.25, now + note.duration - 0.05); // Sustain
+                gainNode.gain.linearRampToValueAtTime(0, now + note.duration); // Release
+                
+                osc.start(now);
+                osc.stop(now + note.duration);
+                
+                noteIndex = (noteIndex + 1) % melody.length;
+                
+                // Jeda sebelum nada berikutnya
+                setTimeout(playNextNote, note.duration * 1000);
+            }
+
+            playNextNote();
+        }
+
+        function stopAlarm() {
+            isAlarmPlaying = false;
+            if (audioContext) {
+                audioContext.close().then(() => {
+                    audioContext = null;
+                    masterGainNode = null;
+                });
+            }
+        }
+
+        // ==========================================
+        // BANK SOAL TANTANGAN
+        // ==========================================
+        const challenges = {
+            // Soal Matematika
+            math: {
+                easy: () => {
+                    const operations = ['+', '-', '*'];
+                    const op = operations[Math.floor(Math.random() * operations.length)];
+                    let a = Math.floor(Math.random() * 10) + 1;
+                    let b = Math.floor(Math.random() * 10) + 1;
+                    
+                    let question, answer;
+                    switch(op) {
+                        case '+':
+                            question = `Berapa ${a} + ${b}?`;
+                            answer = a + b;
+                            break;
+                        case '-':
+                            if (a < b) [a, b] = [b, a];
+                            question = `Berapa ${a} - ${b}?`;
+                            answer = a - b;
+                            break;
+                        case '*':
+                            question = `Berapa ${a} × ${b}?`;
+                            answer = a * b;
+                            break;
+                    }
+                    return { question, answer: answer.toString() };
+                },
+                medium: () => {
+                    const operations = ['+', '-', '*', '/'];
+                    const op = operations[Math.floor(Math.random() * operations.length)];
+                    let a = Math.floor(Math.random() * 20) + 10;
+                    let b = Math.floor(Math.random() * 20) + 10;
+                    
+                    let question, answer;
+                    switch(op) {
+                        case '+':
+                            question = `Berapa ${a} + ${b}?`;
+                            answer = a + b;
+                            break;
+                        case '-':
+                            if (a < b) [a, b] = [b, a];
+                            question = `Berapa ${a} - ${b}?`;
+                            answer = a - b;
+                            break;
+                        case '*':
+                            a = Math.floor(Math.random() * 12) + 2;
+                            b = Math.floor(Math.random() * 12) + 2;
+                            question = `Berapa ${a} × ${b}?`;
+                            answer = a * b;
+                            break;
+                        case '/':
+                            b = Math.floor(Math.random() * 10) + 2;
+                            a = b * (Math.floor(Math.random() * 10) + 2);
+                            question = `Berapa ${a} ÷ ${b}?`;
+                            answer = a / b;
+                            break;
+                    }
+                    return { question, answer: answer.toString() };
+                },
+                hard: () => {
+                    const types = ['multi', 'square', 'complex'];
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    
+                    let question, answer;
+                    if (type === 'multi') {
+                        const a = Math.floor(Math.random() * 20) + 10;
+                        const b = Math.floor(Math.random() * 10) + 2;
+                        const c = Math.floor(Math.random() * 10) + 2;
+                        question = `Berapa ${a} + ${b} × ${c}? (ingat urutan operasi)`;
+                        answer = a + (b * c);
+                    } else if (type === 'square') {
+                        const num = Math.floor(Math.random() * 15) + 5;
+                        question = `Berapa ${num}²?`;
+                        answer = num * num;
+                    } else {
+                        const a = Math.floor(Math.random() * 10) + 5;
+                        const b = Math.floor(Math.random() * 5) + 2;
+                        const c = Math.floor(Math.random() * 10) + 5;
+                        question = `Berapa (${a} + ${b}) × ${c}?`;
+                        answer = (a + b) * c;
+                    }
+                    return { question, answer: answer.toString() };
+                }
+            },
+
+            // Tebak Negara
+            country: {
+                easy: () => {
+                    const countries = [
+                        { country: 'Indonesia', capital: 'Jakarta' },
+                        { country: 'Malaysia', capital: 'Kuala Lumpur' },
+                        { country: 'Thailand', capital: 'Bangkok' },
+                        { country: 'Singapura', capital: 'Singapura' },
+                        { country: 'Filipina', capital: 'Manila' },
+                        { country: 'Vietnam', capital: 'Hanoi' },
+                        { country: 'Jepang', capital: 'Tokyo' },
+                        { country: 'Korea Selatan', capital: 'Seoul' }
+                    ];
+                    const item = countries[Math.floor(Math.random() * countries.length)];
+                    return {
+                        question: `Apa ibu kota dari ${item.country}?`,
+                        answer: item.capital.toLowerCase()
+                    };
+                },
+                medium: () => {
+                    const countries = [
+                        { country: 'Prancis', capital: 'Paris' },
+                        { country: 'Jerman', capital: 'Berlin' },
+                        { country: 'Italia', capital: 'Roma' },
+                        { country: 'Spanyol', capital: 'Madrid' },
+                        { country: 'Inggris', capital: 'London' },
+                        { country: 'Mesir', capital: 'Kairo' },
+                        { country: 'Australia', capital: 'Canberra' },
+                        { country: 'Kanada', capital: 'Ottawa' },
+                        { country: 'Brasil', capital: 'Brasilia' },
+                        { country: 'Argentina', capital: 'Buenos Aires' }
+                    ];
+                    const item = countries[Math.floor(Math.random() * countries.length)];
+                    return {
+                        question: `Apa ibu kota dari ${item.country}?`,
+                        answer: item.capital.toLowerCase()
+                    };
+                },
+                hard: () => {
+                    const countries = [
+                        { country: 'Kazakhstan', capital: 'Astana' },
+                        { country: 'Nigeria', capital: 'Abuja' },
+                        { country: 'Pakistan', capital: 'Islamabad' },
+                        { country: 'Turki', capital: 'Ankara' },
+                        { country: 'Myanmar', capital: 'Naypyidaw' },
+                        { country: 'Afrika Selatan', capital: 'Pretoria' },
+                        { country: 'Swiss', capital: 'Bern' },
+                        { country: 'Belanda', capital: 'Amsterdam' },
+                        { country: 'Maroko', capital: 'Rabat' },
+                        { country: 'Nepal', capital: 'Kathmandu' }
+                    ];
+                    const item = countries[Math.floor(Math.random() * countries.length)];
+                    return {
+                        question: `Apa ibu kota dari ${item.country}?`,
+                        answer: item.capital.toLowerCase()
+                    };
+                }
+            },
+
+            // Teka-teki Logika
+            logic: {
+                easy: () => {
+                    const puzzles = [
+                        { question: 'Jika kemarin adalah hari Senin, hari apa lusa?', answer: 'rabu' },
+                        { question: 'Berapa jumlah hari dalam 2 minggu?', answer: '14' },
+                        { question: 'Jika 1 lusin = 12, berapa setengah lusin?', answer: '6' },
+                        { question: 'Berapa jumlah sisi segitiga?', answer: '3' },
+                        { question: 'Apa warna yang dihasilkan dari campuran merah dan kuning?', answer: 'oranye' },
+                        { question: 'Berapa kaki yang dimiliki seekor ayam?', answer: '2' }
+                    ];
+                    return puzzles[Math.floor(Math.random() * puzzles.length)];
+                },
+                medium: () => {
+                    const puzzles = [
+                        { question: 'Saya punya 3 apel. Saya ambil 2 apel. Berapa apel yang saya punya sekarang?', answer: '2' },
+                        { question: 'Urutan angka: 2, 4, 8, 16, ... Angka selanjutnya adalah?', answer: '32' },
+                        { question: 'Berapa jumlah sudut dalam segitiga (dalam derajat)?', answer: '180' },
+                        { question: 'Planet terdekat dengan matahari adalah?', answer: 'merkurius' },
+                        { question: 'Jika A=1, B=2, C=3, berapa nilai D?', answer: '4' },
+                        { question: 'Berapa banyak benua di dunia?', answer: '7' }
+                    ];
+                    return puzzles[Math.floor(Math.random() * puzzles.length)];
+                },
+                hard: () => {
+                    const puzzles = [
+                        { question: 'Urutan Fibonacci: 1, 1, 2, 3, 5, 8, ... Angka selanjutnya?', answer: '13' },
+                        { question: 'Jika 5 kucing menangkap 5 tikus dalam 5 menit, berapa menit untuk 100 kucing menangkap 100 tikus?', answer: '5' },
+                        { question: 'Berapa kaki yang dimiliki 3 ayam dan 2 kambing?', answer: '14' },
+                        { question: 'Simbol kimia untuk emas adalah? (2 huruf)', answer: 'au' },
+                        { question: 'Berapa banyak nol dalam satu juta?', answer: '6' },
+                        { question: 'Akar kuadrat dari 144 adalah?', answer: '12' }
+                    ];
+                    return puzzles[Math.floor(Math.random() * puzzles.length)];
+                }
+            }
+        };
+
+        // ==========================================
+        // FUNGSI UPDATE WAKTU REAL-TIME
+        // ==========================================
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // ==========================================
+        // FUNGSI CEK WAKTU ALARM
+        // ==========================================
+        function checkAlarm() {
+            if (!alarmTime) return;
+            
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const currentSeconds = now.getSeconds();
+            
+            // Trigger alarm saat jam dan menit sesuai (di detik ke-0)
+            if (currentHours === alarmTime.hours && 
+                currentMinutes === alarmTime.minutes && 
+                currentSeconds === 0) {
+                triggerAlarm();
+            }
+        }
+
+        // ==========================================
+        // FUNGSI TRIGGER ALARM
+        // ==========================================
+        function triggerAlarm() {
+            // Putar alarm riang
+            playCheerfulAlarm();
+            
+            // Generate tantangan pertama
+            generateChallenge();
+            
+            // Tampilkan layar tantangan
+            setupScreen.style.display = 'none';
+            challengeScreen.classList.add('active');
+            successScreen.classList.remove('active');
+            
+            // Focus ke input jawaban
+            answerInput.focus();
+        }
+
+        // ==========================================
+        // FUNGSI GENERATE TANTANGAN ACAK
+        // ==========================================
+        function generateChallenge() {
+            const type = challengeTypeSelect.value;
+            const difficulty = difficultySelect.value;
+            
+            let challengeType;
+            
+            // Pilih jenis tantangan
+            if (type === 'mixed') {
+                const types = ['math', 'country', 'logic'];
+                challengeType = types[Math.floor(Math.random() * types.length)];
+            } else {
+                challengeType = type;
+            }
+            
+            // Generate soal berdasarkan jenis dan tingkat kesulitan
+            currentChallenge = challenges[challengeType][difficulty]();
+            
+            // Tampilkan soal
+            challengeQuestion.textContent = currentChallenge.question;
+            answerInput.value = '';
+            feedback.classList.remove('show');
+        }
+
+        // ==========================================
+        // FUNGSI CEK JAWABAN
+        // ==========================================
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = currentChallenge.answer.toLowerCase();
+            
+            if (userAnswer === correctAnswer) {
+                // JAWABAN BENAR - MATIKAN ALARM
+                stopAlarm();
+                
+                // Tampilkan layar sukses
+                challengeScreen.classList.remove('active');
+                successScreen.classList.add('active');
+                
+                // Reset alarm
+                resetAlarm();
+            } else {
+                // JAWABAN SALAH - TAMPILKAN FEEDBACK DAN SOAL BARU
+                feedback.textContent = '❌ Jawaban kurang tepat. Coba soal baru!';
+                feedback.className = 'feedback show wrong';
+                
+                // Generate soal baru setelah delay singkat
+                setTimeout(() => {
+                    generateChallenge();
+                }, 1500);
+            }
+        }
+
+        // ==========================================
+        // FUNGSI SET ALARM
+        // ==========================================
+        function setAlarm() {
+            const hours = parseInt(alarmHourInput.value);
+            const minutes = parseInt(alarmMinuteInput.value);
+            
+            // Validasi input
+            if (isNaN(hours) || isNaN(minutes) || 
+                hours < 0 || hours > 23 || 
+                minutes < 0 || minutes > 59) {
+                alert('⚠️ Masukkan waktu yang valid!\nJam: 0-23, Menit: 0-59');
+                return;
+            }
+            
+            // Simpan waktu alarm
+            alarmTime = { hours, minutes };
+            
+            // Update status
+            alarmStatus.textContent = `✅ Alarm aktif untuk ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            alarmStatus.className = 'alarm-status active';
+            
+            // Toggle tombol
+            setAlarmBtn.classList.add('hidden');
+            cancelAlarmBtn.classList.remove('hidden');
+            
+            // Disable input saat alarm aktif
+            alarmHourInput.disabled = true;
+            alarmMinuteInput.disabled = true;
+            challengeTypeSelect.disabled = true;
+            difficultySelect.disabled = true;
+        }
+
+        // ==========================================
+        // FUNGSI RESET ALARM
+        // ==========================================
+        function resetAlarm() {
+            alarmTime = null;
+            
+            // Update status
+            alarmStatus.textContent = '❌ Alarm Tidak Aktif';
+            alarmStatus.className = 'alarm-status inactive';
+            
+            // Toggle tombol
+            setAlarmBtn.classList.remove('hidden');
+            cancelAlarmBtn.classList.add('hidden');
+            
+            // Enable input
+            alarmHourInput.disabled = false;
+            alarmMinuteInput.disabled = false;
+            challengeTypeSelect.disabled = false;
+            difficultySelect.disabled = false;
+        }
+
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+        
+        // Tombol Set Alarm
+        setAlarmBtn.addEventListener('click', setAlarm);
+        
+        // Tombol Cancel Alarm
+        cancelAlarmBtn.addEventListener('click', resetAlarm);
+        
+        // Tombol Submit Jawaban
+        submitAnswerBtn.addEventListener('click', checkAnswer);
+        
+        // Tombol Kembali ke Setup
+        backToSetupBtn.addEventListener('click', () => {
+            successScreen.classList.remove('active');
+            setupScreen.style.display = 'block';
+        });
+        
+        // Enter key untuk submit jawaban
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Volume slider update
+        volumeSlider.addEventListener('input', (e) => {
+            volumeValue.textContent = e.target.value + '%';
+        });
+
+        // ==========================================
+        // INISIALISASI - JALANKAN SAAT HALAMAN DIMUAT
+        // ==========================================
+        
+        // Update waktu realtime pertama kali
+        updateCurrentTime();
+        
+        // Update waktu setiap detik (1000ms = 1 detik)
+        // Ini adalah SISTEM WAKTU REALTIME yang mengambil waktu dari sistem komputer/HP
+        setInterval(() => {
+            updateCurrentTime();  // Update tampilan jam
+            checkAlarm();         // Cek apakah waktu alarm sudah tiba
+        }, 1000);
+        
+        console.log('✅ Wake n Solve - Alarm Interaktif SIAP!');
+        console.log('⏰ Sistem waktu realtime AKTIF');
+        console.log('🔔 Alarm akan berbunyi dengan melodi riang saat waktu tercapai');
+        console.log('🎵 Melodi: Do-Mi-Sol-Do (C-E-G-C) - Chord Major yang ceria!');
+    </script>
+</body>
+</html>
+
+
+
+
